@@ -34,9 +34,10 @@ async function showWelcomeMessage() {
 const commandHandlers = {
     help: async () => {
         rl.pause();
-        console.log(chalk.green('Available commands:'));
+        console.log(chalk.yellow('Available commands:'));
         console.log(chalk.green('help - Show this help message'));
         console.log(chalk.green('list - List all folders in /containers'));
+        console.log(chalk.green('setup [name] - Setup a new container'));
         console.log(chalk.green('exit - Exit the program'));
         rl.resume();
         rl.prompt();
@@ -61,6 +62,29 @@ const commandHandlers = {
             rl.prompt();
         });
     },
+    setup: async (args) => {
+        if (args.length === 0) {
+            console.log(chalk.red('Error: Missing container name.'));
+            rl.prompt();
+            return;
+        } else if (args.length > 1) {
+            console.log(chalk.red('Error: Too many arguments.'));
+            rl.prompt();
+            return;
+        } else {
+            const containerName = args[0];
+            const containerPath = `./containers/${containerName}`;
+            fs.mkdir(containerPath, (err) => {
+                if (err) {
+                    console.error(chalk.red(`Error: ${err.message}`));
+                    rl.prompt();
+                    return;
+                }
+                console.log(chalk.green(`Container ${containerName} created successfully.`));
+                rl.prompt();
+            });
+        }
+    },
     exit: async () => {
         rl.close();
     },
@@ -75,11 +99,13 @@ const commandHandlers = {
     }
 };
 
-rl.on('line', async (line) => {
-    const command = line.trim().toLowerCase();
+rl.on('line', (line) => {
+    const input = line.trim().split(/\s+/);
+    const command = input.shift().toLowerCase();
+    const args = input;
     const handler = commandHandlers[command] || commandHandlers.default;
-    await handler();
-}).on('close', async () => {
+    handler(args);
+  }).on('close', () => {
     console.log(chalk.red('Bye!'));
     process.exit(0);
-});
+  });
