@@ -10,13 +10,19 @@ const rl = readline.createInterface({
     output: process.stdout,
 });
 
+let chalk, figlet;
+
+(async () => {
+    const chalkModule = await import('chalk');
+    const figletModule = await import('figlet');
+
+    chalk = chalkModule.default ? chalkModule.default : chalkModule;
+    figlet = figletModule.default ? figletModule.default : figletModule;
+
+    showWelcomeMessage();
+})();
+
 async function showWelcomeMessage() {
-    const chalkModule = await chalkPromise;
-    const figletModule = await figletPromise;
-
-    const chalk = chalkModule.default ? chalkModule.default : chalkModule;
-    const figlet = figletModule.default ? figletModule.default : figletModule;
-
     console.clear();
     console.log(chalk.magenta(figlet.textSync('MultiScriptInOne', { horizontalLayout: 'full' })));
     console.log(chalk.blue(`Welcome in `+chalk.magenta("MultiScriptInOne")+` by `+chalk.yellow(`@light2k4`)));
@@ -25,58 +31,55 @@ async function showWelcomeMessage() {
     rl.prompt();
 }
 
-showWelcomeMessage();
-
-rl.on('line', async (line) => {
-    const chalkModule = await chalkPromise;
-    const chalk = chalkModule.default ? chalkModule.default : chalkModule;
-    const command = line.trim().toLowerCase();
-    let handled = false; // Flag to indicate if the command has been handled
-
-    if (command === 'help') {
-        rl.pause(); // Pause the prompt
+const commandHandlers = {
+    help: async () => {
+        rl.pause();
         console.log(chalk.green('Available commands:'));
         console.log(chalk.green('help - Show this help message'));
         console.log(chalk.green('list - List all folders in /containers'));
         console.log(chalk.green('exit - Exit the program'));
-        rl.resume(); // Resume the prompt
-        handled = true; // Command has been handled
-    } else if (command === 'list') {
-        rl.pause(); // Pause the prompt
-        // this command list all folders in the folder containers with module fs
+        rl.resume();
+        rl.prompt();
+    },
+    list: async () => {
+        rl.pause(); 
         fs.readdir('./containers', (err, files) => {
             if (err) {
                 console.error(chalk.red(`Error: ${err.message}`));
-                rl.resume(); // Resume to ensure prompt comes after logging
+                rl.resume(); 
                 rl.prompt(); 
                 return;
             }
             if (files.length === 0) {
                 console.log(chalk.yellow('No folders found in /containers.'));
-                rl.resume(); // Ensure the prompt comes after the message
-                rl.prompt(); // Reprompt even if no files are found
             } else {
-                files.forEach((file, index) => {
+                files.forEach((file) => {
                     console.log(chalk.green(file));
-                    if (index === files.length - 1) {
-                        rl.resume(); // Resume to ensure prompt comes after logging
-                        rl.prompt(); // Reprompt after all files have been listed
-                    }
                 });
             }
+            rl.resume();
+            rl.prompt();
         });
-        handled = true; // Command has been handled
-    } else if (command === 'exit' || command === 'quit' || command === 'close') {
+    },
+    exit: async () => {
         rl.close();
+    },
+    quit: async () => {
+        rl.close();
+    },
+    close: async () => {
+        rl.close();
+    },
+    default: async () => {
+        rl.prompt();
     }
+};
 
-    if (handled) {
-        // For synchronous commands, prompt is handled outside the condition
-        // For asynchronous commands like 'list', rl.prompt() is called after the operation
-    }
+rl.on('line', async (line) => {
+    const command = line.trim().toLowerCase();
+    const handler = commandHandlers[command] || commandHandlers.default;
+    await handler();
 }).on('close', async () => {
-    const chalkModule = await chalkPromise;
-    const chalk = chalkModule.default ? chalkModule.default : chalkModule;
     console.log(chalk.red('Bye!'));
     process.exit(0);
 });
