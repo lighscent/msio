@@ -38,6 +38,7 @@ const commandHandlers = {
         console.log(chalk.green('help - Show this help message'));
         console.log(chalk.green('list - List all folders in /containers'));
         console.log(chalk.green('setup [name] - Setup a new container'));
+        console.log(chalk.green('install [name] [npm/yarn]- Install modules in container with npm or yarn'));
         console.log(chalk.green('exit - Exit the program'));
         rl.resume();
         rl.prompt();
@@ -82,6 +83,46 @@ const commandHandlers = {
                 }
                 console.log(chalk.green(`Container ${containerName} created successfully.`));
                 rl.prompt();
+            });
+        }
+    },
+    install: async (args) => {
+        if (args.length === 0) {
+            console.log(chalk.red('Error: Missing container name.'));
+            rl.prompt();
+            return;
+        } else if (args.length === 1) {
+            console.log(chalk.red('Error: Missing package manager.'));
+            rl.prompt();
+            return;
+        } else if (args.length > 2) {
+            console.log(chalk.red('Error: Too many arguments.'));
+            rl.prompt();
+            return;
+        } else {
+            const containerName = args[0];
+            const packageManager = args[1];
+            const containerPath = `./containers/${containerName}`;
+            fs.access(containerPath, fs.constants.F_OK, (err) => {
+                if (err) {
+                    console.error(chalk.red(`Error: Container ${containerName} not found.`));
+                    rl.prompt();
+                    return;
+                }
+                exec(`cd ${containerPath} && ${packageManager} install`, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(chalk.red(`Error: ${error.message}`));
+                        rl.prompt();
+                        return;
+                    }
+                    if (stderr) {
+                        console.error(chalk.red(`Error: ${stderr}`));
+                        rl.prompt();
+                        return;
+                    }
+                    console.log(chalk.green(`Modules installed successfully in container ${containerName}.`));
+                    rl.prompt();
+                });
             });
         }
     },
