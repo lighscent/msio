@@ -29,9 +29,9 @@ showWelcomeMessage();
 rl.on('line', async (line) => {
     const chalkModule = await chalkPromise;
     const chalk = chalkModule.default ? chalkModule.default : chalkModule;
-    const trimmedLine = line.trim().toLowerCase();
+    const command = line.trim().toLowerCase();
 
-    if (trimmedLine === 'help') {
+    if (command === 'help') {
         console.log(chalk.green('Available commands:'));
         console.log(chalk.green('help - Show this help message'));
         console.log(chalk.green('exit - Exit the program'));
@@ -39,12 +39,17 @@ rl.on('line', async (line) => {
         return;
     }
 
-    if (trimmedLine === 'exit' || trimmedLine === 'quit' || trimmedLine === 'close') {
+    if (command === '') {
+        rl.prompt();
+        return;
+    }
+
+    if (command === 'exit' || command === 'quit' || command === 'close') {
         rl.close();
         return;
     }
 
-    if (trimmedLine === 'cls' || trimmedLine === 'clear') {
+    if (command === 'cls' || command === 'clear') {
         console.clear();
         showWelcomeMessage();
         rl.prompt();
@@ -63,7 +68,7 @@ rl.on('line', async (line) => {
         console.log(chalk.green(stdout));
     });
 
-    console.error(chalk.red(`Command not recognized: ${trimmedLine}`));
+    console.error(chalk.red(`Command not recognized: ${command}`));
     rl.prompt();
 }).on('close', async () => {
     const chalkModule = await chalkPromise;
