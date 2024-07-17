@@ -25,8 +25,8 @@ let chalk, figlet;
 async function showWelcomeMessage() {
     console.clear();
     console.log(chalk.magenta(figlet.textSync('MultiScriptInOne', { horizontalLayout: 'full' })));
-    console.log(chalk.blue(`Welcome in `+chalk.magenta("MultiScriptInOne")+` by `+chalk.yellow(`@light2k4`)));
-    console.log(chalk.blue(`Type `+chalk.green("help")+` to get a list of available commands or `+chalk.red("exit")+` to quit`));
+    console.log(chalk.blue(`Welcome in ` + chalk.magenta("MultiScriptInOne") + ` by ` + chalk.yellow(`@light2k4`)));
+    console.log(chalk.blue(`Type ` + chalk.green("help") + ` to get a list of available commands or ` + chalk.red("exit") + ` to quit`));
     rl.setPrompt(chalk.cyan('MSIO> '));
     rl.prompt();
 }
@@ -37,6 +37,7 @@ const commandHandlers = {
         console.log(chalk.yellow('Available commands:'));
         console.log(chalk.green('help - Show this help message'));
         console.log(chalk.green('list - List all folders in /containers'));
+        console.log(chalk.green('config - Configure all settings'));
         console.log(chalk.green('setup [name] - Setup a new container'));
         console.log(chalk.green('install [name] [npm/yarn]- Install modules in container with npm or yarn'));
         console.log(chalk.green('exit - Exit the program'));
@@ -44,12 +45,12 @@ const commandHandlers = {
         rl.prompt();
     },
     list: async () => {
-        rl.pause(); 
+        rl.pause();
         fs.readdir('./containers', (err, files) => {
             if (err) {
                 console.error(chalk.red(`Error: ${err.message}`));
-                rl.resume(); 
-                rl.prompt(); 
+                rl.resume();
+                rl.prompt();
                 return;
             }
             if (files.length === 0) {
@@ -109,6 +110,11 @@ const commandHandlers = {
                     rl.prompt();
                     return;
                 }
+                if (packageManager !== 'npm' && packageManager !== 'yarn') {
+                    console.error(chalk.red(`Error: Invalid package manager. Only npm and yarn are supported.`));
+                    rl.prompt();
+                    return;
+                }
                 exec(`cd ${containerPath} && ${packageManager} install`, (error, stdout, stderr) => {
                     if (error) {
                         console.error(chalk.red(`Error: ${error.message}`));
@@ -146,7 +152,7 @@ rl.on('line', (line) => {
     const args = input;
     const handler = commandHandlers[command] || commandHandlers.default;
     handler(args);
-  }).on('close', () => {
+}).on('close', () => {
     console.log(chalk.red('Bye!'));
     process.exit(0);
-  });
+});
