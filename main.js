@@ -5,6 +5,9 @@ const { exec } = require('child_process');
 const readline = require('readline');
 const fs = require('fs');
 
+require('dotenv').config();
+const { addContainer, updateLastStartDate } = require('./sqlite');
+
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -35,12 +38,20 @@ const commandHandlers = {
     help: async () => {
         rl.pause();
         console.log(chalk.yellow('Available commands:'));
-        console.log(chalk.green('help - Show this help message'));
-        console.log(chalk.green('list - List all folders in /containers'));
-        console.log(chalk.green('config - Configure all settings'));
-        console.log(chalk.green('setup [name] - Setup a new container'));
-        console.log(chalk.green('install [name] [npm/yarn]- Install modules in container with npm or yarn'));
-        console.log(chalk.green('exit - Exit the program'));
+        console.log(chalk.green('help - ') + chalk.cyan('Show this help message'));
+        console.log(chalk.green('list - ') + chalk.cyan('List all folders in /containers'));
+        console.log(chalk.green('config - ') + chalk.cyan('onfigure all settings for MultiScriptInOne'));
+        console.log(chalk.green('setup [name] - ') + chalk.cyan('Setup a new container'));
+        console.log(chalk.green('install [name] [npm/yarn] - ') + chalk.cyan('Install modules in container with npm or yarn'));
+        console.log(chalk.green('exit - ') + chalk.cyan('Exit the program'));
+        rl.resume();
+        rl.prompt();
+    },
+    config: async () => {
+        rl.pause();
+        console.log(chalk.yellow('Configuration settings:'));
+        console.log(chalk.green('Notifications: ') + chalk.cyan('Email / Webhook / None (default: None)'));
+        console.log(chalk.white('Select a option from the list above: ') + chalk.cyan('ex:(database mariadb)'));
         rl.resume();
         rl.prompt();
     },
